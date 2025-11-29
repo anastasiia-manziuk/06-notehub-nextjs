@@ -33,6 +33,7 @@ export default function RootLayout({
           <Header />
           {children}
           <Footer />
+          <div id="modal-root" />
         </TanstackProvider>
       </body>
     </html>

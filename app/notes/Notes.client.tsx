@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import css from './Notes.module.css';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState } from 'react';
 import { useDebounce } from 'use-debounce';
+import { useQuery, HydrationBoundary, DehydratedState } from '@tanstack/react-query';
+
+import css from './Notes.module.css';
 
 import NoteList from '@/components/NoteList/NoteList';
 import useModalControl from '@/components/hooks/useModalControl';
@@ -14,7 +15,11 @@ import NoteForm from '@/components/NoteForm/NoteForm';
 import Pagination from '@/components/Pagination/Pagination';
 import type { NotesResponse } from '@/lib/api';
 
-function NotesClient() {
+type Props = {
+  dehydratedState?: DehydratedState;
+};
+
+export default function NotesClient({ dehydratedState }: Props) {
   const [search, setSearch] = useState('');
   const [debouncedSearch] = useDebounce(search, 300);
 
@@ -32,34 +37,34 @@ function NotesClient() {
   });
 
   return (
-    <div className={css.app}>
-      <header className={css.toolbar}>
-        <SearchBox search={search} onChange={handleSearchChange} />
+    <HydrationBoundary state={dehydratedState}>
+      <div className={css.app}>
+        <header className={css.toolbar}>
+          <SearchBox search={search} onChange={handleSearchChange} />
 
-        {data?.totalPages && data.totalPages > 1 && (
-          <Pagination page={page} totalPages={data?.totalPages ?? 1} onPageChange={setPage} />
+          {data?.totalPages && data.totalPages > 1 && (
+            <Pagination page={page} totalPages={data?.totalPages ?? 1} onPageChange={setPage} />
+          )}
+
+          <button className={css.button} onClick={createNoteModal.openModal}>
+            Create note +
+          </button>
+        </header>
+
+        {isLoading && <strong className={css.loading}>Loading notes...</strong>}
+
+        {!isLoading && data?.notes?.length ? (
+          <NoteList notes={data.notes} />
+        ) : (
+          !isLoading && <p>No notes found</p>
         )}
 
-        <button className={css.button} onClick={createNoteModal.openModal}>
-          Create note +
-        </button>
-      </header>
-
-      {isLoading && <strong className={css.loading}>Loading notes...</strong>}
-
-      {!isLoading && data?.notes?.length ? (
-        <NoteList notes={data.notes} />
-      ) : (
-        !isLoading && <p>No notes found</p>
-      )}
-
-      {createNoteModal.isModalOpen && (
-        <Modal onClose={createNoteModal.closeModal}>
-          <NoteForm onCancel={createNoteModal.closeModal} />
-        </Modal>
-      )}
-    </div>
+        {createNoteModal.isModalOpen && (
+          <Modal onClose={createNoteModal.closeModal}>
+            <NoteForm onCancel={createNoteModal.closeModal} />
+          </Modal>
+        )}
+      </div>
+    </HydrationBoundary>
   );
 }
-
-export default NotesClient;

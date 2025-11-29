@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -39,6 +40,7 @@ export default function NoteList({ notes }: NoteListProps) {
             >
               {deletingId === note.id ? 'Deleting...' : 'Delete'}
             </button>
+            <Link href={`/notes/${note.id}`}>View details</Link>
           </div>
         </li>
       ))}

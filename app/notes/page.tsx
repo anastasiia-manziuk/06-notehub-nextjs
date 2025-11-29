@@ -1,22 +1,18 @@
-import Link from 'next/link';
+// app/notes/page.tsx
+import React from 'react';
+import { QueryClient, dehydrate } from '@tanstack/react-query';
 import { fetchNotes } from '@/lib/api';
+import NotesClient from './Notes.client';
 
 export default async function NotesPage() {
-  const data = await fetchNotes();
+  const queryClient = new QueryClient();
 
-  return (
-    <div>
-      <h1>Notes</h1>
+  await queryClient.prefetchQuery({
+    queryKey: ['notes', '', 1],
+    queryFn: () => fetchNotes(1, '', 12),
+  });
 
-      <ul style={{ paddingInline: '40px', listStyleType: 'disc' }}>
-        {data.notes.map(note => (
-          <li key={note.id}>
-            <p>
-              <Link href={`/notes/${note.id}`}>{note.title}</Link>
-            </p>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+  const dehydratedState = dehydrate(queryClient);
+
+  return <NotesClient dehydratedState={dehydratedState} />;
 }
