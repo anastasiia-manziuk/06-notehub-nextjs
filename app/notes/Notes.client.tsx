@@ -34,6 +34,7 @@ export default function NotesClient({ dehydratedState }: Props) {
   const { data, isLoading } = useQuery<NotesResponse>({
     queryKey: ['notes', debouncedSearch, page],
     queryFn: () => fetchNotes(page, debouncedSearch, 12),
+    placeholderData: prev => prev,
   });
 
   return (
